@@ -8,13 +8,13 @@ AllCops:
 Layout/LineLength:
   Max: 120
 Metrics/MethodLength:
-  Max: 20
+  Max: 150
 Metrics/AbcSize:
   Max: 50
 Metrics/ClassLength:
   Max: 150
 Metrics/BlockLength:
-  ExcludedMethods: ['describe']
+  ExcludedMethods: ["describe"]
   Max: 30
 
 
@@ -45,4 +45,6 @@ Lint/StructNewOverride:
 Style/HashEachMethods:
   Enabled: false
 Style/HashTransformKeys:
+  Enabled: false
+Style/HashTransformValues:
   Enabled: false
