@@ -177,5 +177,29 @@ describe Enumerable do
     end
   end
 
+  describe '#my_inject' do
+    it 'computes all the items in enumerable according to a given block and returns the result' do
+      range = (5..10)
+      expect(range.my_inject { |sum, n| sum + n }).to eql(45)
+    end
+
+    it 'computes the items in enumerable according to an initial memo value and an operator and returns the result' do
+      range = (5..10)
+      expect(range.my_inject(1, :*)).to eql(151_200)
+    end
+
+    it 'combine every element in array aplying the binary operation that in the block and start the argument given' do
+      range = (5..10)
+      expect(range.my_inject(1) { |product, n| product * n }).to eql(151_200)
+    end
+
+    it 'apply binary condition in the block for every element in the array of srtings' do
+      range = %w[cat sheep bear]
+      expect(range.my_inject do |memo, word|
+               memo.length > word.length ? memo : word
+             end).to eql('sheep')
+    end
+  end
+
 end  
 
