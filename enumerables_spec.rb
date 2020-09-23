@@ -201,5 +201,17 @@ describe Enumerable do
     end
   end
 
+  describe '#my_select' do
+    it 'return an array with the elments that complete with condition in the block' do
+      arr = [1, 2, 3, 4, 5]
+      expect(arr.my_select(&:even?)).to eql([2, 4])
+    end
+
+    it 'return enumerator if block is not given' do
+      arr = [1, 2, 3, 4, 5]
+      expect(arr.my_select.class).to eql(Enumerator)
+    end
+  end
+
 end  
 
