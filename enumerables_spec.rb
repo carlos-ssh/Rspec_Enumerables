@@ -153,5 +153,29 @@ describe Enumerable do
     end
   end
 
+  describe '#my_map' do
+    it 'return the array aplying the condition in the block for each element' do
+      range = (1..4)
+      expect(range.my_map { |i| i * i }).to eql([1, 4, 9, 16])
+    end
+
+    it 'return the array aplying the condition in the proc when a proc is given and a block is given' do
+      my_proc = proc { |i| i * i }
+      range = (1..4)
+      expect(range.my_map(my_proc) { |i| i * i }).to eql([1, 4, 9, 16])
+    end
+
+    it 'return the array aplying the condition in the proc when a proc is given and a block is not given' do
+      my_proc = proc { |i| i * i }
+      range = (1..4)
+      expect(range.my_map(my_proc)).to eql([1, 4, 9, 16])
+    end
+
+    it 'return enumerator when block is not given' do
+      range = (1..4)
+      expect(range.my_map.class).to eql(Enumerator)
+    end
+  end
+
 end  
 
