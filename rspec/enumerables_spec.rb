@@ -1,8 +1,8 @@
+# frozen_string_literal: true
 
 require_relative '../lib/enumerables'
 
-
-describe Enumerable do
+class Enumerable do
   let(:arr) { [1, 2, 3, 4] }
 
   describe '#my_each' do
@@ -23,12 +23,12 @@ describe Enumerable do
     it 'return array when a block is given ' do
       arr = [11, 22, 31, 224, 44]
       expect(arr.my_each_with_index do |val, index|
-               puts "index: #{index} for #{val}" if val < 30
-             end).to eql([11, 22, 31, 224, 44])
+      puts "index: #{index} for #{val}" if val < 30
+      end).to eql([11, 22, 31, 224, 44])
     end
   end
 
- describe '#my_all?' do
+  describe '#my_all?' do
     it 'return true if all in the array complete the condition in the block' do
       arr = %w[ant bear cat]
       expect(arr.my_all? { |word| word.length >= 3 }).to eql(true)
@@ -196,8 +196,14 @@ describe Enumerable do
     it 'apply binary condition in the block for every element in the array of srtings' do
       range = %w[cat sheep bear]
       expect(range.my_inject do |memo, word|
-               memo.length > word.length ? memo : word
-             end).to eql('sheep')
+      memo.length > word.length ? memo : word
+      end).to eql('sheep')
+    end
+  end
+
+  describe '#multiply_els' do
+    it 'return the result of the binary operation in the block calling my_inject inside of the method' do
+      expect(multiply_els([2, 4, 5])).to eql(40)
     end
   end
 
@@ -212,6 +218,4 @@ describe Enumerable do
       expect(arr.my_select.class).to eql(Enumerator)
     end
   end
-
-end  
-
+end
