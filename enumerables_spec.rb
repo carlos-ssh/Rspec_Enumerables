@@ -136,5 +136,22 @@ describe Enumerable do
     end
   end
 
+  describe '#my_count' do
+    it 'return the length of the array if block and argument is not given' do
+      arr = [1, 2, 4, 2]
+      expect(arr.my_count).to eql(4)
+    end
+
+    it 'return the number of times that the method find the argument in the array' do
+      arr = [1, 2, 4, 2]
+      expect(arr.my_count(2)).to eql(2)
+    end
+
+    it 'return the number of times that a element complete with the condition in the block' do
+      arr = [1, 2, 4, 2]
+      expect(arr.my_count(&:even?)).to eql(3)
+    end
+  end
+
 end  
 
