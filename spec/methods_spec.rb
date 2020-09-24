@@ -1,194 +1,187 @@
+# rubocop: disable Layout/LineLength
+# spec/main_spec.rb
+
 require_relative '../enumerable_methods.rb'
 
 describe Enumerable do
-  test_array = [1, 2, 4, 8, 16, 32, 64]
-  test_array2 = %w[Hello Hallo Hola Ciao]
-  test_array3 = [false, nil, false, true]
-  test_array4 = [true, 1, 10, nil]
-  test_array5 = [false, nil, false]
-
+  let(:arr) { [1, 2, 3, 4, 5] }
+  let(:hsh) { { one: 1, two: 2, three: 3, four: 4, five: 5 } }
+  let(:target) { [] }
+  let(:str) { %w[hi how hello] }
   describe '#my_each' do
-    it 'returns an enumerator when no block is given' do
-      expect(test_array.my_each).to be_an Enumerator
+    it 'checks if returns an Enumerator object when no block is given.' do
+      expect(arr.my_each).to(satisfy { |output| output.is_a?(Enumerator) })
     end
 
-    it 'returns an object after calling the block for each element in the array' do
-      expect(test_array2.my_each { |i| p i }).to be_an Object
+    it 'checks if array is returned when block is given' do
+      expect(arr.my_each { |index| index }).to eql(arr)
     end
 
-    it 'returns an object after calling the block for each element in the range' do
-      expect((1..6).my_each { |i| p i }).to be_an Object
+    it 'checks if method makes an action for every item in the enumerable.' do
+      arr.my_each { |i| target.push(i + 5) }
+      expect(target).to(satisfy { |t| t == [6, 7, 8, 9, 10] })
     end
   end
 
   describe '#my_each_with_index' do
-    it 'returns an enumerator when no block is given' do
-      expect(test_array.my_each_with_index).to be_an Enumerator
+    it 'checks if it returns an Enumerator object when no block is given' do
+      expect(arr.my_each_with_index).to(satisfy { |output| output.is_a?(Enumerator) })
     end
 
-    it 'returns an object after calling the block for each element in the array' do
-      expect(test_array2.my_each_with_index { |i| p i }).to be_an Object
+    it 'checks if array is returned when block is given' do
+      expect(arr.my_each_with_index { |index| index }).to eql(arr)
     end
 
-    it 'returns an object after calling the block for each element in the range' do
-      expect((1..6).my_each_with_index { |i| p i }).to be_an Object
+    it 'checks if hash is returned when block is given' do
+      expect(hsh.my_each_with_index { |index| index }).to eql(hsh)
+    end
+
+    it 'checks if index is sent to the block' do
+      arr.my_each_with_index { |i| target.push(i - 1) }
+      expect(target).to eql [0, 1, 2, 3, 4]
     end
   end
 
   describe '#my_select' do
-    it 'returns an enumerator when no block is given' do
-      expect(test_array.my_select).to be_an Enumerator
+    it 'selects elements with specific property from array and return' do
+      expect(arr.my_select(&:odd?)).to eql([1, 3, 5])
     end
 
-    it 'returns an array of the elements that meet the block\'s condition' do
-      expect(test_array.my_select { |i| i > 16 }).to eql([32, 64])
+    it 'checks if it returns an Enumerator object when no block is given' do
+      expect(arr.my_select).to(satisfy { |output| output.is_a?(Enumerator) })
     end
 
-    it 'returns an array of the elements of the range that meet the block\'s condition' do
-      expect((1..25).my_select { |i| (i % 5).zero? }).to eql([5, 10, 15, 20, 25])
+    it 'checks if hash is returned when a hash is passed' do
+      expect(hsh.my_select { |index| index }).to eql(hsh)
     end
   end
 
   describe '#my_all?' do
-    it 'returns false whenever the block returns false' do
-      expect(test_array.my_all? { |i| i < 32 }).to be false
+    it 'checks if it returns true for all elements when condition is met' do
+      expect(arr.my_all? { |x| x >= 1 }).to eql true
     end
 
-    it 'returns false when no block given and one element is false or nil' do
-      expect(test_array4.my_all?).to be false
+    it 'checks if block given are integers' do
+      expect(arr.my_all?(Integer)).to eql true
     end
 
-    it 'returns true when all elements meet the block\'s condition' do
-      expect(test_array.my_all? { |i| i < 128 }).to be true
+    it 'checks if block given are String' do
+      expect(arr.my_all?(String)).to eql false
     end
 
-    it 'returns true when no block given and all elements are true' do
-      expect(test_array2.my_all?).to be true
-    end
-
-    it 'returns true when the argument is a class and all elements belong to this class' do
-      expect(test_array2.my_all?(String)).to be true
-    end
-
-    it 'returns false when the argument is a class and one element doesn\'t belong to this class' do
-      expect(test_array4.my_all?(Numeric)).to be false
-    end
-
-    it 'returns true when the argument is a Regexp and all elements match this Regexp' do
-      expect(test_array2.my_all?(/o/)).to be true
-    end
-    it 'returns false when the argument is a Regexp and one element doesn\'t match this Regexp' do
-      expect(test_array2.my_all?(/h/)).to be false
+    it 'checks if characters in a Regexp match' do
+      expect(str.my_all?(/h/)).to eql true
     end
   end
 
   describe '#my_any?' do
-    it 'returns true whenever the block returns true' do
-      expect(test_array.my_any? { |i| i > 32 }).to be true
+    it 'checks if returns true when any element in the enumerable meets a given condition' do
+      expect(arr.my_any?(&:even?)).to eql(true)
     end
 
-    it 'returns false when no block given and all elements are false or nil' do
-      expect(test_array5.my_any?).to be false
+    it 'checks if returns false when no element in the enumerable meets a given condition' do
+      expect(str.my_any? { |i| i.is_a?(Numeric) }).to eql(false)
     end
 
-    it 'returns true when one element meet the block\'s condition' do
-      expect(test_array.my_any? { |i| i == 64 }).to be true
+    it 'checks if any element in the enumerable match with a given regular expression pattern' do
+      expect(str.my_any?(/h/)).to eql(true)
     end
 
-    it 'returns true when no block given and one element is true' do
-      expect(test_array3.my_any?).to be true
+    it 'checks if not true when enumerable contains no-string-data-type elements and they are compared to a given regular expression pattern' do
+      expect(arr.my_any?(/d/)).to_not eql(true)
     end
 
-    it 'returns true when the argument is a class and one element belongs to this class' do
-      expect(test_array4.my_any?(Numeric)).to be true
+    it 'checks if any element in the enumerable is a given type of object' do
+      expect([nil, 10, 'ten', 10.0].my_any?(Float)).to eql(true)
     end
 
-    it 'returns false when the argument is a class and no element belong to this class' do
-      expect(test_array2.my_any?(Numeric)).to be false
+    it 'checks if returns true when enumerable is not empty and neither argument nor block are given' do
+      expect(arr.my_any?).to eql(true)
     end
 
-    it 'returns true when the argument is a Regexp and one element match this Regexp' do
-      expect(test_array2.my_any?(/C/)).to be true
-    end
-    it 'returns false when the argument is a Regexp and no element match this Regexp' do
-      expect(test_array2.my_any?(/z/)).to be false
+    it 'checks if returns false when enumerable is empty and neither argument nor block are given' do
+      expect([].my_any?).to eql(false)
     end
   end
 
   describe '#my_none?' do
-    it 'returns true when the block always returns false' do
-      expect(test_array.my_none?(&:negative?)).to be true
+    it 'checks if returns true when no element in the enumerable meets a given condition' do
+      expect(arr.my_none? { |i| i > 5 }).to eql(true)
     end
 
-    it 'returns false when no block given and one element is true' do
-      expect(test_array3.my_none?).to be false
+    it 'checks if returns false when any element in the enumerable meets a given condition' do
+      expect(str.my_none? { |i| i == 'hi' }).to eql(false)
     end
 
-    it 'returns true when no element meet the block\'s condition' do
-      expect(test_array.my_none? { |i| i > 64 }).to be true
+    it 'checks if no element in the enumerable match with a given regular expression pattern' do
+      expect(str.my_none?(/g/)).to eql(true)
     end
 
-    it 'returns true when no block given and no element is true' do
-      expect(test_array5.my_none?).to be true
+    it 'checks if not false when enumerable contains no-string-data-type elements and they are compared to a given regular expression pattern' do
+      expect(arr.my_none?(/d/)).to_not eql(false)
     end
 
-    it 'returns false when the argument is a class and one element belongs to this class' do
-      expect(test_array4.my_none?(Numeric)).to be false
+    it 'checks if no element in the enumerable is a given type of object' do
+      expect([nil, 10, 'ten', '10.0'].my_none?(Float)).to eql(true)
     end
 
-    it 'returns true when the argument is a class and no element belong to this class' do
-      expect(test_array2.my_none?(Numeric)).to be true
+    it 'checks if returns true when enumerable is full of not-true elements and neither argument nor block are given' do
+      expect([nil, false, nil].my_none?).to eql(true)
     end
 
-    it 'returns false when the argument is a Regexp and one element match this Regexp' do
-      expect(test_array2.my_none?(/C/)).to be false
+    it 'checks if returns true when enumerable is empty and neither argument nor block are given' do
+      expect([].my_none?).to eql(true)
     end
-    it 'returns true when the argument is a Regexp and no element match this Regexp' do
-      expect(test_array2.my_none?(/z/)).to be true
+
+    it 'checks if returns false when enumerable has any true value and neither argument nor block are given' do
+      expect([nil, true, nil].my_none?).to eql(false)
     end
   end
 
   describe '#my_count' do
-    it 'returns the number of items in enum through enumeration' do
-      expect(test_array2.my_count).to eql(4)
+    it 'returns the number of items in the enumerable when a block is given' do
+      expect(arr.my_count { |x| x > 2 }).to eql(3)
     end
 
-    it 'returns the number of items in enum through enumeration::range' do
-      expect((1..30).my_count).to eql(30)
+    it 'returns the number of items in the enumerable' do
+      expect(arr.my_count).to eql(5)
+    end
+
+    it 'returns the number of items in the enumerable that are equal to the item counted' do
+      expect(arr.my_count(2)).to eql(1)
     end
   end
 
   describe '#my_map' do
-    it 'returns an array with the results of running a given block once for every element in enum::range' do
-      expect((1..7).my_map { |i| i * 4 }).to eql([4, 8, 12, 16, 20, 24, 28])
+    it 'checks if a new enumerable is created from applying a block to every item in the caller object' do
+      expect(arr.my_map { |i| i * i }).to eql [1, 4, 9, 16, 25]
     end
 
-    it 'returns an Enumerator if no block is given' do
-      expect(test_array.my_map).to be_an Enumerator
+    it 'checks if no block is given and returns an enumerator' do
+      expect(arr.my_map).to(satisfy { |output| output.is_a?(Enumerator) })
     end
   end
 
   describe '#my_inject' do
-    it 'combines all elements applying the specified condition of the block' do
-      expect(test_array.my_inject { |i, j| i + j }).to eql 127
+    it 'computes all the items in enumerable according to a given operator and returns the result' do
+      expect(arr.my_inject(:*)).to eql(120)
     end
 
-    it 'combines all elements and the initial value applying the specified condition of the block' do
-      expect(test_array.my_inject(13) { |i, j| i + j }).to eql 140
+    it 'computes all the items in enumerable according to a given block and returns the result' do
+      expect(arr.my_inject { |sum, i| sum + i }).to eql(15)
     end
 
-    it 'combines all elements using the symbol argument as a name method' do
-      expect((1..5).my_inject(:*)).to eql 120
+    it 'computes all the items in enumerable according to an initial memo value and an operator and returns the result' do
+      expect(arr.my_inject(100, :-)).to eql(85)
     end
 
-    it 'combines all elements and the initial value using the symbol argument as a name method' do
-      expect((5..10).my_inject(151_200, :/)).to eql 1
+    it 'computes all the items in enumerable according to an initial memo value and a block and returns the result' do
+      expect(arr.my_inject(1000.0) { |div, i| div / i }).to eql(8.333333333333332)
     end
-  end
 
-  describe '#multiply_els' do
-    it 'returns the multiplication of all elements of an array argument' do
-      expect(multiply_els([3, 6, 9])).to eql 162
+    it 'computes longest string in array and return it' do
+      expect(str.my_inject { |m, w| m.length > w.length ? m : w }).to eql('hello')
     end
   end
 end
+# rubocop: enable Layout/LineLength
