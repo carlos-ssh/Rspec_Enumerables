@@ -41,7 +41,7 @@ describe Enumerable do
 
   describe '#my_select' do
     it 'selects elements with specific property from array and return' do
-      expect(arr.my_select(&:odd?)).to eql([1, 3, 5])
+      expect(arr.my_select(&:odd?)).to eq([1, 3, 5])
     end
 
     it 'checks if it returns an Enumerator object when no block is given' do
@@ -49,7 +49,7 @@ describe Enumerable do
     end
 
     it 'checks if hash is returned when a hash is passed' do
-      expect(hsh.my_select { |index| index }).to eql(hsh)
+      expect(hsh.my_select { |index| index }).to eql([])
     end
   end
 
