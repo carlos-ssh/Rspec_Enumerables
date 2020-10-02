@@ -1,267 +1,115 @@
-# rubocop:disable Metrics/PerceivedComplexity,Metrics/CyclomaticComplexity,Metrics/ModuleLength,
-
 module Enumerable
-  # 1st method
   def my_each
     return to_enum(:my_each) unless block_given?
 
-    if is_a? Array or is_a? Range
-      to_array = Array(self)
-      (0...(to_array.length)).each do |i|
-        yield(to_array[i])
-      end
-    else
-      (0...(length)).each do |i|
-        hash = to_a
-        yield(hash[i])
-      end
-    end
+    enum = to_a
+    enum.length.times { |index| yield(enum[index]) }
     self
   end
 
-  # 2nd Method
   def my_each_with_index
-    return to_enum(:my_each_with_index) unless block_given?
+    return to_enum(:my_each) unless block_given?
 
-    if is_a? Array or is_a? Range
-      to_array = Array(self)
-      (0...(to_array.length)).each do |j|
-        i = to_array[j]
-        yield(i, j)
-      end
-    else
-      (0...(length)).each do |j|
-        hash = to_a
-        yield(hash[j], j)
-      end
-    end
+    enum = to_a
+    enum.length.times { |index| yield(enum[index], index) }
     self
   end
 
-  # 3rd method
   def my_select
+    new_enum = []
+    return to_enum(:my_select) unless block_given?
+
+    my_each { |item| new_enum.push(item) if yield(item) }
+    is_a?(Hash) ? new_enum.to_h : new_enum
+  end
+
+  def my_all?(pattern = nil)
     if block_given?
-      new_arr = []
-      if is_a? Array or is_a? Range
-        to_array = Array(self)
-        (0...(to_array.length)).each do |i|
-          item = to_array[i]
-          new_arr.push(item) if yield(item)
-        end
-        new_arr
-      else
-        new_hash = {}
-        key = keys
-        value = values
-        (0...(length)).each do |i|
-          new_hash.store(key[i], value[i]) if yield(key[i], value[i])
-        end
-        new_hash
+      my_each { |item| return false unless yield item }
+      return true
+    end
+    if pattern
+      case pattern.class.to_s
+      when 'Class' then my_all? { |item| item.is_a?(pattern) }
+      when 'Regexp' then my_all? { |item| item =~ pattern }
+      else my_all? { |item| item == pattern }
       end
     else
-      to_enum(:my_select)
+      my_all? { |item| item }
     end
   end
 
-  # 4th method
-  def my_all?(arg = nil)
-    if is_a? Range
-      return false if self.end.nil? or self.begin.nil?
+  def my_any?(pattern = nil)
+    if block_given?
+      my_each { |item| return true if yield item }
+      return false
     end
-    to_array = Array(self)
-    return true if to_array.empty?
-
-    if arg.nil? and !block_given?
-      (0...(to_array.length)).each do |i|
-        return false if to_array[i].nil? or to_array[i] == false
-      end
-    elsif arg.is_a? Class
-      (0...(to_array.length)).each do |i|
-        return false unless to_array[i].is_a? arg
-      end
-    elsif arg.is_a? Regexp
-      (0...(to_array.length)).each do |i|
-        return false unless to_array[i].match(arg)
-      end
-    elsif !arg.is_a? Regexp and !arg.is_a? Class and !block_given?
-      (0...(to_array.length)).each do |i|
-        return false if to_array[i] != arg
+    if pattern
+      case pattern.class.to_s
+      when 'Class' then my_any? { |item| item.is_a?(pattern) }
+      when 'Regexp' then my_any? { |item| item =~ pattern }
+      else my_any? { |item| item == pattern }
       end
     else
-      (0...(to_array.length)).each do |i|
-        return false unless yield(to_array[i])
-      end
+      my_any? { |item| item }
     end
-    true
   end
 
-  # 5th method
-  def my_any?(arg = nil)
-    if is_a? Range
-      return false if self.end.nil? or self.begin.nil?
+  def my_none?(pattern = nil)
+    if block_given?
+      my_each { |item| return false if yield item }
+      return true
     end
-    to_array = Array(self)
-    return false if to_array.empty?
-
-    if arg.nil? and !block_given?
-      (0...(to_array.length)).each do |i|
-        return true if to_array[i]
-      end
-    elsif arg.is_a? Class
-      (0...(to_array.length)).each do |i|
-        return true if to_array[i].is_a? arg
-      end
-    elsif arg.is_a? Regexp
-      (0...(to_array.length)).each do |i|
-        return true if to_array[i].match(arg)
-      end
-    elsif !arg.is_a? Regexp and !arg.is_a? Class and !block_given?
-      (0...(to_array.length)).each do |i|
-        return true if to_array[i] == arg
+    if pattern
+      case pattern.class.to_s
+      when 'Class' then my_none? { |item| item.is_a?(pattern) }
+      when 'Regexp' then my_none? { |item| item =~ pattern }
+      else my_none? { |item| item == pattern }
       end
     else
-      (0...(to_array.length)).each do |i|
-        return true if yield(to_array[i])
-      end
+      my_none? { |item| item }
     end
-    false
   end
 
-  # 6th method
-  def my_none?(arg = nil)
-    if is_a? Range
-      return false if self.end.nil? or self.begin.nil?
-    end
-    to_array = Array(self)
-    return true if to_array.empty?
+  def my_count(search = nil)
+    counter = 0
+    return to_a.length unless block_given? || search
 
-    if arg.nil? and !block_given?
-      (0...(to_array.length)).each do |i|
-        return false if to_array[i]
-      end
-    elsif arg.is_a? Class
-      (0...(to_array.length)).each do |i|
-        return false if to_array[i].is_a? arg
-      end
-    elsif arg.is_a? Regexp
-      (0...(to_array.length)).each do |i|
-        return false if to_array[i].match(arg)
-      end
-    elsif !arg.is_a? Regexp and !arg.is_a? Class and !block_given?
-      (0...(to_array.length)).each do |i|
-        return false unless to_array[i] != arg
-      end
+    if search
+      my_count { |item| item == search }
     else
-      (0...(to_array.length)).each do |i|
-        return false if yield(to_array[i])
-      end
+      my_each { |item| counter += 1 if yield(item) }
+      counter
     end
-    true
   end
 
-  # 7th method
-  def my_count(compare = nil)
-    return 1 / 0.0 if is_a? Range and (self.begin.nil? or self.end.nil?)
+  def my_map(proc = nil)
+    map = []
+    return to_enum(:my_map) unless block_given? || proc
 
-    to_array = Array(self)
-    return to_array.length if !block_given? && compare.nil?
-
-    count = 0
-
-    if compare.nil?
-      (0...(to_array.length)).each do |i|
-        count += 1 if yield(to_array[i])
-      end
-    elsif block_given? && !compare.nil?
-      puts 'warning: given block not used'
-      (0...(to_array.length)).each do |i|
-        count += 1 if compare == to_array[i]
-      end
+    if proc.is_a?(Proc)
+      my_each { |item| map << proc.call(item) }
     else
-      (0...(to_array.length)).each do |i|
-        count += 1 if compare == to_array[i]
-      end
+      my_each { |item| map << yield(item) }
     end
-    count
+    map
   end
 
-  # 9th method
-  def my_inject(arg = nil, num = nil)
-    to_array = Array(self)
-    to_array.unshift(arg) unless arg.nil? or arg.is_a? Symbol
-    injection = to_array[0]
-
-    if num.nil? and block_given?
-      (1...to_array.length).each do |i|
-        injection = yield(injection, to_array[i])
-      end
-    elsif num.is_a? Symbol and !block_given?
-      (1...to_array.length).each do |i|
-        case num
-        when :+ then injection += to_array[i]
-        when :- then injection -= to_array[i]
-        when :* then injection *= to_array[i]
-        when :/ then injection /= to_array[i]
-        end
-      end
-    elsif arg.is_a? Symbol and !block_given?
-      (1...to_array.length).each do |i|
-        case arg
-        when :+ then injection += to_array[i]
-        when :- then injection -= to_array[i]
-        when :* then injection *= to_array[i]
-        when :/ then injection /= to_array[i]
-        end
-      end
+  def my_inject(memo = nil, sym = nil)
+    if memo.is_a?(Symbol)
+      proc = memo.to_proc
+      memo = nil
+      my_each { |item| memo = memo.nil? ? item : proc.call(memo, item) }
+    elsif sym.is_a?(Symbol)
+      proc = sym.to_proc
+      my_each { |item| memo = memo.nil? ? item : proc.call(memo, item) }
     else
-      injection = num
-      (0...to_array.length).each do |i|
-        injection = yield(injection, to_array[i])
-      end
+      my_each { |item| memo = memo.nil? ? item : yield(memo, item) }
     end
-    injection
-  end
-
-  # 10th method
-  def my_map(par = nil)
-    if par.nil? && !block_given?
-      to_enum(:my_map)
-    elsif par.nil?
-      new_arr = []
-      if is_a? Array or is_a? Range
-        to_array = Array(self)
-        (0...(to_array.length)).each do |i|
-          new_arr.push(yield(to_array[i]))
-        end
-      elsif is_a? Hash
-        key = keys
-        value = values
-        (0...(length)).each do |i|
-          yield(key[i], value[i])
-          new_arr.push(yield(key[i], value[i]))
-        end
-      end
-      new_arr
-    else
-      new_arr = []
-      if is_a? Array
-        (0...(length)).each do |i|
-          new_arr.push(par[self[i]])
-        end
-      elsif is_a? Hash
-        key = keys
-        value = values
-        (0...(length)).each do |i|
-          new_arr.push(par[key[i], value[i]])
-        end
-      end
-      new_arr
-    end
+    memo
   end
 end
 
-def multiply_els(arr)
-  arr.my_inject(:*)
+def multiply_els(numbers)
+  numbers.my_inject(&:*)
 end
-
-# rubocop:enable Metrics/PerceivedComplexity,Metrics/CyclomaticComplexity,Metrics/ModuleLength
